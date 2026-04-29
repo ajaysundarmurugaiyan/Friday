@@ -1,0 +1,15 @@
+# ── Python ──────────────────────────────────────────────────────────
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+
+# ── Environment secrets (NEVER commit these) ─────────────────────────
+.env
+token.json
+credentials.json
+
+# ── Logs & temp ──────────────────────────────────────────────────────
+*.log
+KMS/
