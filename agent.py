@@ -62,7 +62,7 @@ from livekit.agents import (
     AgentStateChangedEvent, ChatMessage,
 )
 
-from livekit.plugins import noise_cancellation, google
+from livekit.plugins import google
 from livekit.plugins.google.realtime.api_proto import types as google_types
 
 from prompts import AGENT_INSTRUCTION, SESSION_INSTRUCTION
@@ -242,7 +242,7 @@ async def entrypoint(ctx: agents.JobContext):
         agent=Assistant(),
         room_input_options=RoomInputOptions(
             video_enabled=False,
-            noise_cancellation=noise_cancellation.BVC(),
+            # noise_cancellation removed — saves ~280 MB RAM on Railway free tier
         ),
     )
 
