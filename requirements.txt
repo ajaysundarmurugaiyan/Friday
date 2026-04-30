@@ -1,7 +1,6 @@
 livekit-agents
 livekit-plugins-google
 duckduckgo-search
-langchain-community
 requests
 python-dotenv
 google-api-python-client

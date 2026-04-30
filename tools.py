@@ -8,7 +8,7 @@ from email.mime.text import MIMEText
 from typing import Optional
 
 import requests
-from langchain_community.tools import DuckDuckGoSearchRun
+from duckduckgo_search import DDGS
 from livekit.agents import function_tool, RunContext
 
 # Gmail OAuth
@@ -148,7 +148,31 @@ async def get_weather(
 # ---------------------------------------------------------------------------
 
 def _search_web_sync(query: str) -> str:
-    return DuckDuckGoSearchRun().run(tool_input=query)
+    """
+    Direct DuckDuckGo search using DDGS API (no langchain wrapper).
+    Retries up to 3 times with backoff — handles cloud IP rate-limiting.
+    """
+    import time
+    last_error = None
+    for attempt in range(1, 4):  # 3 attempts
+        try:
+            with DDGS() as ddgs:
+                results = list(ddgs.text(query, max_results=5))
+            if not results:
+                return f"No search results found for '{query}'."
+            # Format results clearly for the agent to read aloud
+            formatted = []
+            for i, r in enumerate(results, 1):
+                title = r.get("title", "Result")
+                body  = r.get("body", "")
+                formatted.append(f"{i}. {title}\n   {body}")
+            return "\n\n".join(formatted)
+        except Exception as e:
+            last_error = e
+            logger.warning(f"[SEARCH] Attempt {attempt}/3 failed: {e}")
+            if attempt < 3:
+                time.sleep(2 * attempt)  # 2s, then 4s backoff
+    raise last_error  # re-raise after all retries exhausted
 
 
 @function_tool()
@@ -169,11 +193,11 @@ async def search_web(
             error=err,
             detail=traceback.format_exc(),
             suggestion=(
-                "DuckDuckGo may be rate-limiting requests. Wait 30 seconds and try again. "
-                "If it persists, restart the agent."
+                "DuckDuckGo is rate-limiting this server's IP. "
+                "This is common on cloud platforms. Try again in 30 seconds."
             ),
         )
-        return f"An error occurred while searching for '{query}'."
+        return f"Sorry, I was unable to search for '{query}' right now. DuckDuckGo may be temporarily blocking this server. Please try again in a moment."
 
 
 # ---------------------------------------------------------------------------
