@@ -8,7 +8,7 @@ from email.mime.text import MIMEText
 from typing import Optional
 
 import requests
-from duckduckgo_search import DDGS
+from ddgs import DDGS
 from livekit.agents import function_tool, RunContext
 
 # Gmail OAuth
